@@ -19,6 +19,10 @@ export class ConceptNode extends GenericNode {
     this.description = description;
   }
 
+  setDescription(description: string) {
+    this.description = description;
+  }
+
   getAiStringDescription(): string {
     return `Concept ID: ${this.id || ""}\nConcept: ${this.description}`;
   }

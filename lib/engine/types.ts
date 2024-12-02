@@ -1,8 +1,11 @@
+import { Node } from "@xyflow/react";
+import { GenericNode } from "./nodes/generic-node";
+
 export enum NodeType {
-  QUESTION = "question",
-  PAPER = "paper",
-  CONCEPT = "concept",
-  INSIGHT = "insight",
+  QUESTION = "Question",
+  PAPER = "Paper",
+  CONCEPT = "Concept",
+  INSIGHT = "Insight",
 }
 
 export interface PaperMetadata {
@@ -14,3 +17,6 @@ export interface PaperMetadata {
   publishDate?: Date;
   keywords?: string[];
 }
+
+export type FlowNodeData = { node: GenericNode };
+export type FlowNode = Node<FlowNodeData, "flowNode">;
