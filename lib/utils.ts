@@ -7,6 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getNodeTypeColor(nodeType: NodeType): string {
+  console.log("nodeType", nodeType);
   switch (nodeType) {
     case NodeType.CONCEPT:
       return "text-amber-600 dark:text-amber-500";
