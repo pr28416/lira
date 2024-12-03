@@ -1,15 +1,8 @@
 import { openai } from "@/lib/ai/openai";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod.mjs";
-import { PaperNode } from "../nodes/paper-node";
-function extractArxivId(url: string): string {
-  // Match either standard arXiv ID format or ID from DOI URL
-  const arxivRegex = /(?:arXiv\.)(\d+\.\d+)|(?:arxiv.org\/abs\/)(\d+\.\d+)/i;
-  const match = url.match(arxivRegex);
-  // Return the captured group (either from DOI format or direct arXiv URL)
-  return match ? match[1] || match[2] : "";
-}
-
+import { PaperNode } from "../../nodes/paper-node";
+import { extractArxivId } from "../arxiv/extract-arxiv-id";
 export async function createPaperNodeFromDOI(
   doi: string
 ): Promise<PaperNode | null> {

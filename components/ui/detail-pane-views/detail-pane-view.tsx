@@ -6,6 +6,7 @@ import QuestionDetailView from "./question-detail-view";
 import ConceptDetailView from "./concept-detail-view";
 import { cn } from "@/lib/utils";
 import { getNodeTypeColor } from "@/lib/utils";
+import PaperDetailView from "./paper-detail-view";
 
 export default function DetailPaneView() {
   const { selectedNode } = useFlow();
@@ -34,6 +35,8 @@ export default function DetailPaneView() {
         <QuestionDetailView node={node} />
       ) : node.data.node.type === NodeType.CONCEPT ? (
         <ConceptDetailView node={node} />
+      ) : node.data.node.type === NodeType.PAPER ? (
+        <PaperDetailView node={node} />
       ) : null}
     </div>
   );
