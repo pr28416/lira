@@ -14,4 +14,8 @@ export class Engine {
   removeNode(nodeId: string) {
     this.nodes = this.nodes.filter((node) => node.id !== nodeId);
   }
+
+  getNode(nodeId: string): GenericNode | undefined {
+    return this.nodes.find((node) => node.id === nodeId);
+  }
 }

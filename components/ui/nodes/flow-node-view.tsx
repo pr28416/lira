@@ -55,7 +55,7 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
           <Trash2 />
         </Button>
       </NodeToolbar>
-      <Handle type="target" position={Position.Top} />
+      {/* <Handle type="target" position={Position.Top} /> */}
       <div
         className={cn(
           "flex flex-col bg-card divide-y shadow-md border",
@@ -75,7 +75,12 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
           <p className="text-xs text-muted-foreground italic">{data.node.id}</p>
         </div>
       </div>
-      <Handle type="source" position={Position.Bottom} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        isConnectable={true}
+        style={{ width: 10, height: 10 }}
+      />
     </Fragment>
   );
 }

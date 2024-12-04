@@ -4,7 +4,10 @@ import { PaperNode } from "@/lib/engine/nodes/paper-node";
 import { Button } from "../button";
 import { Fragment, useEffect, useState } from "react";
 import { extractArxivId } from "@/lib/engine/services/arxiv/extract-arxiv-id";
-import { PaperSummaryChunk } from "@/lib/engine/services/arxiv/types";
+import {
+  ConceptGenerationProgress,
+  PaperSummaryChunk,
+} from "@/lib/engine/services/arxiv/types";
 import { PaperSummaryProgress } from "@/lib/engine/services/arxiv/types";
 import { PaperSummary } from "@/lib/engine/services/arxiv/types";
 import { Progress } from "../progress";
@@ -12,6 +15,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Node } from "@xyflow/react";
 import { useFlow } from "@/contexts/node-context";
+import { useToast } from "@/hooks/use-toast";
+import {
+  ConceptNodeData,
+  createConceptNodesFromData,
+} from "@/lib/engine/nodes/concept-node";
 
 // Component to display detailed information about a research paper node
 export default function PaperDetailView({ node }: { node: Node }) {
@@ -21,7 +29,9 @@ export default function PaperDetailView({ node }: { node: Node }) {
     paperNode.getAiSummary() ?? ""
   );
   const [percentComplete, setPercentComplete] = useState<number>(0);
-  const { onNodesChange } = useFlow();
+  const { onNodesChange, addNode } = useFlow();
+  const [isAddingConcepts, setIsAddingConcepts] = useState<boolean>(false);
+  const conceptGenerationToast = useToast();
 
   useEffect(() => {
     console.log(
@@ -94,6 +104,79 @@ export default function PaperDetailView({ node }: { node: Node }) {
     }
   };
 
+  const handleAddConceptsToGraph = async () => {
+    try {
+      setIsAddingConcepts(true);
+      console.log("Adding concepts to graph");
+
+      const response = await fetch("/api/arxiv/generate-concepts-from-paper", {
+        method: "POST",
+        body: JSON.stringify({ summary: aiSummary }),
+      });
+
+      const reader = response.body?.getReader();
+
+      while (true) {
+        const { done, value } = (await reader?.read()) ?? {};
+        if (done) break;
+
+        const lines = new TextDecoder().decode(value).split("\n");
+
+        for (const line of lines) {
+          if (line.trim()) {
+            const update: ConceptGenerationProgress | ConceptNodeData[] =
+              JSON.parse(line);
+
+            if ("title" in update) {
+              conceptGenerationToast.dismiss();
+              conceptGenerationToast.toast({
+                title: update.title,
+                description: update.description,
+                duration: 2 * 60 * 1000,
+              });
+            } else {
+              const rawNodes = createConceptNodesFromData(update);
+              console.log("Got new concepts", rawNodes);
+              conceptGenerationToast.dismiss();
+              conceptGenerationToast.toast({
+                title: "Concepts generated",
+                description: `${rawNodes.length} concepts generated`,
+                duration: 5 * 1000,
+              });
+
+              const numNodes = rawNodes.length;
+              const a = Math.min(node.width ?? 200, node.height ?? 100) / 2; // Semi-major axis
+              const centerX = node.position.x;
+              const centerY = node.position.y;
+
+              rawNodes.forEach((conceptNode, index) => {
+                // Use μ (mu) and ν (nu) as our elliptic coordinates
+                // We'll keep μ constant to place nodes on the same ellipse
+                const mu = 3; // Constant value determines the size of the ellipse
+                const nu = (2 * Math.PI * index) / numNodes; // Varies around the ellipse
+
+                // Convert elliptic coordinates to Cartesian using the standard equations:
+                // x = a * cosh(μ) * cos(ν)
+                // y = a * sinh(μ) * sin(ν)
+                const x = a * Math.cosh(mu) * Math.cos(nu);
+                const y = a * Math.sinh(mu) * Math.sin(nu);
+
+                addNode(conceptNode, {
+                  x: centerX + x + (node.width ?? 0) / 2,
+                  y: centerY + y + (node.height ?? 0) / 2,
+                });
+              });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error adding concepts to graph", error);
+    } finally {
+      setIsAddingConcepts(false);
+    }
+  };
+
   return (
     // Main container with vertical layout and spacing
     <div className="flex flex-col gap-2">
@@ -124,9 +207,21 @@ export default function PaperDetailView({ node }: { node: Node }) {
 
       {aiSummary && (
         <Fragment>
-          <p className="text-muted-foreground text-xs mt-2 font-bold">
-            AI Summary
-          </p>
+          <div className="flex flex-row justify-between mt-2 items-center">
+            <p className="text-muted-foreground text-xs font-bold">
+              AI Summary
+            </p>
+            {aiSummary.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={handleAddConceptsToGraph}
+                size="sm"
+                disabled={isAddingConcepts}
+              >
+                Add concepts to graph
+              </Button>
+            )}
+          </div>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             className="text-foreground w-full prose-sm"

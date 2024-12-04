@@ -1,4 +1,9 @@
-import { connectNodes, GenericNode } from "./generic-node";
+import {
+  connectNodes,
+  GenericNode,
+  GenericNodeData,
+  createGenericNodeDataFromNode,
+} from "./generic-node";
 import { NodeType } from "../types";
 import { z } from "zod";
 import OpenAI from "openai";
@@ -10,6 +15,10 @@ const ConceptExtractSchema = z.array(
     connectedToNodesWithIds: z.array(z.string()),
   })
 );
+
+export interface ConceptNodeData extends GenericNodeData {
+  description: string;
+}
 
 export class ConceptNode extends GenericNode {
   description: string;
@@ -26,6 +35,34 @@ export class ConceptNode extends GenericNode {
   getAiStringDescription(): string {
     return `Concept ID: ${this.id || ""}\nConcept: ${this.description}`;
   }
+}
+
+export function createConceptNodeDataFromNode(
+  node: ConceptNode
+): ConceptNodeData {
+  return {
+    ...createGenericNodeDataFromNode(node),
+    description: node.description,
+  };
+}
+
+export function createConceptNodesFromData(
+  data: ConceptNodeData[]
+): ConceptNode[] {
+  const nodes = data.map((d) => new ConceptNode(d.description));
+  nodes.forEach((n, i) => {
+    n.id = data[i].id;
+  });
+  // Connect nodes
+  data.forEach((d, i) => {
+    d.neighbors.forEach((neighborId) => {
+      const neighbor = nodes.find((n) => n.id === neighborId);
+      if (neighbor) {
+        connectNodes(nodes[i], neighbor);
+      }
+    });
+  });
+  return nodes;
 }
 
 export async function aiGenerateConceptNodesFromNodes(

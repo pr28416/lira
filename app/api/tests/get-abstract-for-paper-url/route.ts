@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { getAbstractFromArxivPaper } from "@/lib/engine/services/get-abstract-from-paper";
+import { getAbstractFromArxivPaper } from "@/lib/engine/services/arxiv/get-abstract-from-paper";
 import { NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

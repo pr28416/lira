@@ -1,6 +1,12 @@
 import { v4 as uuidv4 } from "uuid";
 import { NodeType } from "../types";
 
+export interface GenericNodeData {
+  id: string;
+  type: NodeType;
+  neighbors: string[]; // IDs of nodes that are connected to this concept
+}
+
 export class GenericNode {
   id: string;
   type: NodeType;
@@ -23,6 +29,16 @@ export class GenericNode {
   getAiStringDescription(): string {
     return "";
   }
+}
+
+export function createGenericNodeDataFromNode(
+  node: GenericNode
+): GenericNodeData {
+  return {
+    id: node.id,
+    type: node.type,
+    neighbors: node.neighbors.map((n) => n.id),
+  };
 }
 
 export function connectNodes(node1: GenericNode, node2: GenericNode) {

@@ -26,7 +26,7 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import { Engine } from "@/lib/engine/schemas/engine";
-import { GenericNode } from "@/lib/engine/nodes/generic-node";
+import { disconnectNodes, GenericNode } from "@/lib/engine/nodes/generic-node";
 
 // Define the context type
 interface FlowContextType {
@@ -39,7 +39,7 @@ interface FlowContextType {
   onConnect: (connection: Connection) => void;
   engine: Engine;
   setEngine: Dispatch<SetStateAction<Engine>>;
-  addNode: (node: GenericNode) => Node;
+  addNode: (node: GenericNode, position: { x: number; y: number }) => Node;
   selectedNode: Node | null;
   setSelectedNode: Dispatch<SetStateAction<Node | null>>;
 }
@@ -70,11 +70,14 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   );
 
   const addNode = useCallback(
-    (node: GenericNode) => {
+    (
+      node: GenericNode,
+      position: { x: number; y: number } = { x: 0, y: 0 }
+    ) => {
       const flowNode: Node = {
         id: node.id,
         data: { node: node },
-        position: { x: 0, y: 0 }, // TODO: Fix this
+        position: position,
         type: "flowNode",
       };
       engine.addNode(node);
@@ -92,8 +95,9 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     [setNodes]
   );
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) =>
-      setEdges((eds) => applyEdgeChanges(changes, eds)),
+    (changes: EdgeChange[]) => {
+      setEdges((eds) => applyEdgeChanges(changes, eds));
+    },
     [setEdges]
   );
 

@@ -12,3 +12,8 @@ export type PaperSummary = {
   pageSummaries: string[];
   summary: string;
 };
+
+export type ConceptGenerationProgress = {
+  title: string;
+  description: string;
+};
