@@ -19,7 +19,7 @@ export default function DetailPaneView() {
 
   const node = selectedNode as FlowNode;
   return (
-    <div className="w-full max-w-2xl p-4 flex flex-col gap-4">
+    <div className="w-full max-w-2xl p-4 flex flex-col gap-4 overflow-y-scroll">
       <div className="flex flex-row justify-between items-center">
         <p
           className={cn(

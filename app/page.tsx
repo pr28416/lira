@@ -67,21 +67,21 @@ export default function Home() {
   const [detailPaneOpen, setDetailPaneOpen] = useState(false);
 
   return (
-    <div className="h-screen flex flex-col divide-y dark">
+    <div className="flex flex-row w-full h-screen divide-x">
       {/* Nav bar */}
-      <div className="px-4 py-2 flex flex-row bg-background justify-between items-center">
-        <p className="text-xl font-mono text-primary">LiRA</p>
-        <Button
-          variant={detailPaneOpen ? "default" : "outline"}
-          size="icon"
-          onClick={() => setDetailPaneOpen(!detailPaneOpen)}
-        >
-          {detailPaneOpen ? <PanelRightClose /> : <PanelRightOpen />}
-        </Button>
-      </div>
 
       {/* Main content */}
-      <div className="flex flex-row w-full h-full divide-x">
+      <div className="w-full flex flex-col divide-y dark">
+        <div className="px-4 py-2 flex flex-row bg-background justify-between items-center">
+          <p className="text-xl font-mono text-primary">LiRA</p>
+          <Button
+            variant={detailPaneOpen ? "default" : "outline"}
+            size="icon"
+            onClick={() => setDetailPaneOpen(!detailPaneOpen)}
+          >
+            {detailPaneOpen ? <PanelRightClose /> : <PanelRightOpen />}
+          </Button>
+        </div>
         {/* React flow canvas */}
         <ReactFlowProvider>
           <ReactFlow
@@ -112,8 +112,8 @@ export default function Home() {
           </ReactFlow>
         </ReactFlowProvider>
         {/* Detail pane */}
-        {detailPaneOpen && <DetailPaneView />}
       </div>
+      {detailPaneOpen && <DetailPaneView />}
     </div>
   );
 }

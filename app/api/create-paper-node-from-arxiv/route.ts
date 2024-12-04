@@ -1,4 +1,4 @@
-import { createPaperNodeFromArxiv } from "@/lib/engine/services/paper-node-ops";
+import { createPaperNodeFromArxiv } from "@/lib/engine/services/nodes/paper-node-ops";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {

@@ -77,7 +77,7 @@ export async function* getPaperSummary(
     } as PaperSummaryProgress;
   }
 
-  const overallSummaryPrompt = `Given these page-by-page summaries of an academic paper, provide a detailed overall summary of the entire paper: ${pageSummaries.join(
+  const overallSummaryPrompt = `Given these page-by-page summaries of an academic paper, provide a detailed but concise overall summary of the entire paper of all the important points in Markdown format. Do not include \`\`\`markdown or \`\`\` at the beginning or end of your response: ${pageSummaries.join(
     "\n\n"
   )}`;
 

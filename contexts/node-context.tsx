@@ -85,8 +85,10 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   );
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) =>
-      setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes: NodeChange[]) => {
+      console.log("Applying node changes", changes);
+      setNodes((nds) => applyNodeChanges(changes, nds));
+    },
     [setNodes]
   );
   const onEdgesChange = useCallback(
