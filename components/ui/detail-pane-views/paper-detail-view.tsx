@@ -20,6 +20,7 @@ import {
   ConceptNodeData,
   createConceptNodesFromData,
 } from "@/lib/engine/nodes/concept-node";
+import { connectNodes } from "@/lib/engine/nodes/generic-node";
 
 // Component to display detailed information about a research paper node
 export default function PaperDetailView({ node }: { node: Node }) {
@@ -29,7 +30,7 @@ export default function PaperDetailView({ node }: { node: Node }) {
     paperNode.getAiSummary() ?? ""
   );
   const [percentComplete, setPercentComplete] = useState<number>(0);
-  const { onNodesChange, addNode } = useFlow();
+  const { onNodesChange, addNode, addEdgeBetweenNodes } = useFlow();
   const [isAddingConcepts, setIsAddingConcepts] = useState<boolean>(false);
   const conceptGenerationToast = useToast();
 
@@ -164,6 +165,17 @@ export default function PaperDetailView({ node }: { node: Node }) {
                 addNode(conceptNode, {
                   x: centerX + x + (node.width ?? 0) / 2,
                   y: centerY + y + (node.height ?? 0) / 2,
+                });
+              });
+
+              rawNodes.forEach((conceptNode) => {
+                connectNodes(paperNode, conceptNode);
+                addEdgeBetweenNodes(paperNode, conceptNode);
+              });
+
+              rawNodes.forEach((conceptNode) => {
+                conceptNode.neighbors.forEach((neighbor) => {
+                  addEdgeBetweenNodes(conceptNode, neighbor);
                 });
               });
             }

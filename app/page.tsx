@@ -6,6 +6,7 @@ import { PanelRightClose, PanelRightOpen } from "lucide-react";
 import {
   Background,
   BackgroundVariant,
+  ConnectionMode,
   Controls,
   MiniMap,
   Node,
@@ -43,16 +44,28 @@ export default function Home() {
     let newNode: Node | null = null;
     switch (option) {
       case AddNodeButtonOption.QUESTION:
-        newNode = addNode(new QuestionNode(content as string));
+        newNode = addNode(new QuestionNode(content as string), {
+          x: 0,
+          y: 0,
+        });
         break;
       case AddNodeButtonOption.PAPER:
-        newNode = addNode(new PaperNode(content as PaperMetadata));
+        newNode = addNode(new PaperNode(content as PaperMetadata), {
+          x: 0,
+          y: 0,
+        });
         break;
       case AddNodeButtonOption.CONCEPT:
-        newNode = addNode(new ConceptNode(content as string));
+        newNode = addNode(new ConceptNode(content as string), {
+          x: 0,
+          y: 0,
+        });
         break;
       case AddNodeButtonOption.INSIGHT:
-        newNode = addNode(new InsightNode(content as string));
+        newNode = addNode(new InsightNode(content as string), {
+          x: 0,
+          y: 0,
+        });
         break;
       default:
         newNode = null;
@@ -71,7 +84,7 @@ export default function Home() {
       {/* Nav bar */}
 
       {/* Main content */}
-      <div className="w-full flex flex-col divide-y dark">
+      <div className="w-full flex flex-col divide-y">
         <div className="px-4 py-2 flex flex-row bg-background justify-between items-center">
           <p className="text-xl font-mono text-primary">LiRA</p>
           <Button
@@ -100,6 +113,7 @@ export default function Home() {
             onPaneClick={() => {
               setSelectedNode(null);
             }}
+            connectionMode={ConnectionMode.Loose}
           >
             <Controls />
             <MiniMap />

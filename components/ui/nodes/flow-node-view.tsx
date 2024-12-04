@@ -55,11 +55,17 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
           <Trash2 />
         </Button>
       </NodeToolbar>
-      {/* <Handle type="target" position={Position.Top} /> */}
       <div
         className={cn(
-          "flex flex-col bg-card divide-y shadow-md border",
-          selectedNode?.id === nodeProps.id && "border border-primary"
+          "flex flex-col bg-card divide-y shadow-md border max-w-sm",
+          selectedNode?.id === nodeProps.id && "border border-primary",
+          (selectedNode as FlowNode)?.data.node.neighbors
+            .map((n) => n.id)
+            .includes(data.node.id)
+            ? "border border-red-500"
+            : selectedNode !== null &&
+                selectedNode.id !== nodeProps.id &&
+                "opacity-50"
         )}
       >
         <NodePicker nodeProps={nodeProps} />
