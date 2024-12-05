@@ -1,8 +1,7 @@
 import { extractArxivId } from "./extract-arxiv-id";
 import { openai } from "@/lib/ai/openai";
-import * as pdfjsLib from "pdfjs-dist";
-import { TextItem } from "pdfjs-dist/types/src/display/api";
 import { PaperSummary, PaperSummaryChunk, PaperSummaryProgress } from "./types";
+import { getPaginatedPDFTextFromArxivLink } from "./get-raw-pdf-text-from-arxiv";
 
 export function getPdfLinkFromArxiv(arxivLink: string) {
   const arxivId = extractArxivId(arxivLink);
@@ -28,34 +27,23 @@ async function summarizePage(
 }
 
 export async function* getPaperSummary(
-  pdfLink: string,
+  arxivLink: string,
   maxTokens: number = 128000,
   maxSummaryTokens: number = 1024
 ): AsyncGenerator<PaperSummaryProgress | PaperSummaryChunk | PaperSummary> {
-  const response = await fetch(pdfLink);
-  const arrayBuffer = await response.arrayBuffer();
-  const loadingTask = pdfjsLib.getDocument({
-    data: arrayBuffer,
-  });
-  const pdfDocument = await loadingTask.promise;
+  const pageTexts = await getPaginatedPDFTextFromArxivLink(arxivLink);
 
   const tokensPerPage = Math.floor(
-    (maxTokens - maxSummaryTokens) / pdfDocument.numPages
+    (maxTokens - maxSummaryTokens) / pageTexts.length
   );
 
   let completedPages = 0;
-  const totalPages = pdfDocument.numPages;
+  const totalPages = pageTexts.length;
   const pageSummaries: string[] = new Array(totalPages);
 
   // Create an array to track completion of each page
   const pagePromises = Array.from({ length: totalPages }, async (_, i) => {
-    const page = await pdfDocument.getPage(i + 1);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .filter((item): item is TextItem => "str" in item)
-      .map((item) => item.str)
-      .join(" ")
-      .trim();
+    const pageText = pageTexts[i];
 
     if (pageText) {
       pageSummaries[i] = await summarizePage(i + 1, pageText, tokensPerPage);

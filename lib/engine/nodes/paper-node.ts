@@ -4,11 +4,15 @@ import { NodeType, PaperMetadata } from "../types";
 export class PaperNode extends GenericNode {
   rawPaperMetadata: PaperMetadata | null;
   aiSummary: string | null;
+  citedUrls: string[];
+  citedArxivPapers: PaperMetadata[];
 
   constructor(rawPaperMetadata: PaperMetadata) {
     super(NodeType.PAPER);
     this.rawPaperMetadata = rawPaperMetadata;
     this.aiSummary = null;
+    this.citedUrls = [];
+    this.citedArxivPapers = [];
   }
 
   getAiStringDescription(): string {

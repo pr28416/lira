@@ -61,7 +61,7 @@ export default function AddNodeButton({
     }
   };
 
-  const handleAddPaper = () => {
+  const handleAddPaper = async () => {
     onClick?.(AddNodeButtonOption.PAPER, retrievedPaper);
     setIsDialogOpen(false);
     setRetrievedPaper(null);

@@ -21,6 +21,7 @@ import {
   createConceptNodesFromData,
 } from "@/lib/engine/nodes/concept-node";
 import { connectNodes } from "@/lib/engine/nodes/generic-node";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 
 // Component to display detailed information about a research paper node
 export default function PaperDetailView({ node }: { node: Node }) {
@@ -206,42 +207,76 @@ export default function PaperDetailView({ node }: { node: Node }) {
         {paperNode.rawPaperMetadata?.abstract}
       </p>
 
-      {/* AI summary section */}
-      <Button
-        variant="outline"
-        onClick={handleSummarizePaper}
-        disabled={isSummarizing}
-      >
-        Summarize paper with AI
-      </Button>
+      <Tabs defaultValue="paper_summary">
+        <TabsList className="grid grid-cols-2">
+          <TabsTrigger value="paper_summary">Paper summary</TabsTrigger>
+          <TabsTrigger value="references">References</TabsTrigger>
+        </TabsList>
+        <TabsContent value="paper_summary">
+          <div className="flex flex-col gap-2">
+            {/* AI summary section */}
+            <Button
+              variant="outline"
+              onClick={handleSummarizePaper}
+              disabled={isSummarizing}
+            >
+              Summarize paper with AI
+            </Button>
 
-      {isSummarizing && <Progress value={percentComplete} />}
+            {isSummarizing && <Progress value={percentComplete} />}
 
-      {aiSummary && (
-        <Fragment>
-          <div className="flex flex-row justify-between mt-2 items-center">
-            <p className="text-muted-foreground text-xs font-bold">
-              AI Summary
-            </p>
-            {aiSummary.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={handleAddConceptsToGraph}
-                size="sm"
-                disabled={isAddingConcepts}
-              >
-                Add concepts to graph
-              </Button>
+            {aiSummary && (
+              <Fragment>
+                <div className="flex flex-row justify-between mt-2 items-center">
+                  <p className="text-muted-foreground text-xs font-bold">
+                    AI Summary
+                  </p>
+                  {aiSummary.length > 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={handleAddConceptsToGraph}
+                      size="sm"
+                      disabled={isAddingConcepts}
+                    >
+                      Add concepts to graph
+                    </Button>
+                  )}
+                </div>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  className="text-foreground w-full prose-sm"
+                >
+                  {aiSummary}
+                </ReactMarkdown>
+              </Fragment>
             )}
           </div>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            className="text-foreground w-full prose-sm"
-          >
-            {aiSummary}
-          </ReactMarkdown>
-        </Fragment>
-      )}
+        </TabsContent>
+        <TabsContent value="references">
+          <div className="flex flex-col gap-2">
+            <p className="text-muted-foreground text-xs font-bold mt-2">
+              ArXiv papers cited by this paper
+            </p>
+            <div className="flex flex-col gap-2">
+              {paperNode.citedArxivPapers.map((paper, id) => (
+                <div
+                  key={id}
+                  className="flex flex-col gap-1 bg-secondary rounded border p-2"
+                >
+                  <p className="text-sm font-semibold">{paper.title}</p>
+                  {paper.authors && (
+                    <p className="text-xs text-muted-foreground">
+                      {paper.authors?.length > 2
+                        ? `${paper.authors[0]} et al.`
+                        : paper.authors?.join(", ") || "Unknown authors"}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { PaperMetadata } from "../../types";
+
 export interface PaperSummaryChunk {
   pageSummaries: string[];
   summaryChunk: string;
@@ -16,4 +18,9 @@ export type PaperSummary = {
 export type ConceptGenerationProgress = {
   title: string;
   description: string;
+};
+
+export type ExtractReferencesResponse = {
+  papers: PaperMetadata[];
+  nonPapers: string[];
 };

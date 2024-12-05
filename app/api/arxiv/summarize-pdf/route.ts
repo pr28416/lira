@@ -1,20 +1,16 @@
 import { NextRequest } from "next/server";
 
-import {
-  getPaperSummary,
-  getPdfLinkFromArxiv,
-} from "@/lib/engine/services/arxiv/get-pdf-from-arxiv";
+import { getPaperSummary } from "@/lib/engine/services/arxiv/get-pdf-from-arxiv";
 import { NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const { arxivLink } = await request.json();
-  const pdfLink = getPdfLinkFromArxiv(arxivLink);
 
   const stream = new TransformStream();
   const writer = stream.writable.getWriter();
 
   // Process the generator
-  const generator = getPaperSummary(pdfLink);
+  const generator = getPaperSummary(arxivLink);
 
   // Start processing in the background
   (async () => {

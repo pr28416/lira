@@ -24,6 +24,7 @@ import { useState } from "react";
 import DetailPaneView from "@/components/ui/detail-pane-views/detail-pane-view";
 import { PaperMetadata } from "@/lib/engine/types";
 import AddNodeButton from "@/components/ui/add-node-button";
+import { ExtractReferencesResponse } from "@/lib/engine/services/arxiv/types";
 
 const nodeTypes = {
   flowNode: FlowNodeView,
@@ -40,7 +41,10 @@ export default function Home() {
     setSelectedNode,
   } = useFlow();
 
-  const handleAddNode = (option: AddNodeButtonOption, content: unknown) => {
+  const handleAddNode = async (
+    option: AddNodeButtonOption,
+    content: unknown
+  ) => {
     let newNode: Node | null = null;
     switch (option) {
       case AddNodeButtonOption.QUESTION:
@@ -50,9 +54,35 @@ export default function Home() {
         });
         break;
       case AddNodeButtonOption.PAPER:
-        newNode = addNode(new PaperNode(content as PaperMetadata), {
+        const paperContent = content as PaperMetadata;
+        const newPaper = new PaperNode(paperContent);
+        newNode = addNode(newPaper, {
           x: 0,
           y: 0,
+        });
+        if (!newNode) {
+          return;
+        }
+        fetch("/api/arxiv/extract-references", {
+          method: "POST",
+          body: JSON.stringify({ arxivLink: paperContent.URL }),
+        }).then(async (response) => {
+          const citedArxivPapers: ExtractReferencesResponse =
+            await response.json();
+          newPaper.citedArxivPapers = citedArxivPapers.papers;
+          newPaper.citedUrls = citedArxivPapers.nonPapers;
+          onNodesChange([
+            {
+              id: newPaper.id,
+              type: "replace",
+              item: {
+                id: newPaper.id,
+                data: { node: newPaper },
+                type: "flowNode",
+                position: newNode!.position,
+              },
+            },
+          ]);
         });
         break;
       case AddNodeButtonOption.CONCEPT:
