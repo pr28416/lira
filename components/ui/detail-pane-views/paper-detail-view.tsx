@@ -22,16 +22,20 @@ import {
 } from "@/lib/engine/nodes/concept-node";
 import { connectNodes } from "@/lib/engine/nodes/generic-node";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
+import { PaperMetadata } from "@/lib/engine/types";
+import { Loader2, RefreshCcw, Trash2 } from "lucide-react";
+import { getRandomPosition, loadCitedPapers } from "@/lib/utils";
 
 // Component to display detailed information about a research paper node
 export default function PaperDetailView({ node }: { node: Node }) {
   const paperNode = node.data.node as PaperNode;
   const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
+  const [isLoadingCitedPapers, setIsLoadingCitedPapers] = useState<boolean>(false);
   const [aiSummary, setAiSummary] = useState<string>(
     paperNode.getAiSummary() ?? ""
   );
   const [percentComplete, setPercentComplete] = useState<number>(0);
-  const { onNodesChange, addNode, addEdgeBetweenNodes } = useFlow();
+  const { nodes, onNodesChange, addNode, addEdgeBetweenNodes } = useFlow();
   const [isAddingConcepts, setIsAddingConcepts] = useState<boolean>(false);
   const conceptGenerationToast = useToast();
 
@@ -190,16 +194,57 @@ export default function PaperDetailView({ node }: { node: Node }) {
     }
   };
 
+  const handleAddCitedPaperToGraph = (paper: PaperMetadata) => {
+    const newPaperNode = new PaperNode(paper);
+
+    const { x, y } = getRandomPosition(node, 200);
+    addNode(newPaperNode, { x, y });
+    addEdgeBetweenNodes(paperNode, newPaperNode);
+  };
+
+  const handleRemoveCitedPaper = (paper: PaperMetadata) => {
+    paperNode.citedArxivPapers = paperNode.citedArxivPapers.filter(
+      (p) => p.URL !== paper.URL
+    );
+    onNodesChange([
+      {
+        id: paperNode.id,
+        type: "replace",
+        item: {
+          id: paperNode.id,
+          data: { node: paperNode },
+          type: "flowNode",
+          position: node.position,
+        },
+      },
+    ]);
+  };
+
   return (
     // Main container with vertical layout and spacing
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 h-[90%]">
       {/* Title and authors section */}
       <div className="flex flex-col gap-1 font-bold">
         {/* Paper title */}
-        <p>{paperNode.rawPaperMetadata?.title}</p>
+        <a
+          href={paperNode.rawPaperMetadata?.URL}
+          className="text-lg font-bold"
+          target="_blank"
+        >
+          {paperNode.rawPaperMetadata?.title}
+        </a>
         {/* Authors list with muted appearance */}
         <p className="text-xs text-muted-foreground">
-          {paperNode.rawPaperMetadata?.authors?.join(", ") || "Unknown authors"}
+          {paperNode.rawPaperMetadata?.authors
+            ? paperNode.rawPaperMetadata.authors.join(", ").length > 20
+              ? paperNode.rawPaperMetadata.authors
+                  .slice(
+                    0,
+                    paperNode.rawPaperMetadata.authors.join(", ").lastIndexOf(",", 20)
+                  )
+                  .join(", ") + " et al."
+              : paperNode.rawPaperMetadata.authors.join(", ")
+            : "Unknown authors"}
         </p>
       </div>
       {/* Paper abstract with smaller text and relaxed line height */}
@@ -207,11 +252,23 @@ export default function PaperDetailView({ node }: { node: Node }) {
         {paperNode.rawPaperMetadata?.abstract}
       </p>
 
-      <Tabs defaultValue="paper_summary">
-        <TabsList className="grid grid-cols-2">
+      <Tabs defaultValue="paper_summary" className="h-full">
+        <TabsList className="grid grid-cols-3">
+          <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="paper_summary">Paper summary</TabsTrigger>
           <TabsTrigger value="references">References</TabsTrigger>
         </TabsList>
+        <TabsContent value="notes" className="h-full">
+          <div className="flex flex-col gap-2 h-full">
+            <textarea
+              className="w-full bg-transparent border border-white/20 rounded-lg p-2 outline-none resize-none h-full"
+              defaultValue={paperNode.notes}
+              onChange={(e) => {
+                paperNode.notes = e.target.value;
+              }}
+            />
+          </div>
+        </TabsContent>
         <TabsContent value="paper_summary">
           <div className="flex flex-col gap-2">
             {/* AI summary section */}
@@ -254,16 +311,62 @@ export default function PaperDetailView({ node }: { node: Node }) {
         </TabsContent>
         <TabsContent value="references">
           <div className="flex flex-col gap-2">
-            <p className="text-muted-foreground text-xs font-bold mt-2">
-              ArXiv papers cited by this paper
-            </p>
+            <div className="flex flex-row justify-between">
+              <p className="text-muted-foreground text-xs font-bold mt-2">
+                Most useful ArXiv papers cited by this paper
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  loadCitedPapers(
+                    paperNode,
+                    node,
+                    onNodesChange,
+                    setIsLoadingCitedPapers
+                  );
+                }}
+                disabled={isLoadingCitedPapers}
+              >
+                {isLoadingCitedPapers ? (
+                  <>
+                    Loading... <Loader2 className="w-4 h-4 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    Reload <RefreshCcw className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            </div>
             <div className="flex flex-col gap-2">
               {paperNode.citedArxivPapers.map((paper, id) => (
                 <div
                   key={id}
                   className="flex flex-col gap-1 bg-secondary rounded border p-2"
                 >
-                  <p className="text-sm font-semibold">{paper.title}</p>
+                  <div className="flex justify-between">
+                    <p className="text-sm font-semibold">{paper.title}</p>
+                    <div className="flex flex-row gap-2">
+                      {nodes.find((n) => (n.data.node as PaperNode).rawPaperMetadata?.title === paper.title) ? null : (
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 rounded-full min-h-8 min-w-8"
+                          onClick={() => handleAddCitedPaperToGraph(paper)}
+                        >
+                          <span className="text-xl">+</span>
+                        </Button>
+                      )}
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-8 w-8 min-h-8 min-w-8"
+                        onClick={() => handleRemoveCitedPaper(paper)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                   {paper.authors && (
                     <p className="text-xs text-muted-foreground">
                       {paper.authors?.length > 2
@@ -271,6 +374,7 @@ export default function PaperDetailView({ node }: { node: Node }) {
                         : paper.authors?.join(", ") || "Unknown authors"}
                     </p>
                   )}
+                  <p className="text-xs">{paper.abstract}</p>
                 </div>
               ))}
             </div>

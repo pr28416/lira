@@ -6,6 +6,7 @@ export class PaperNode extends GenericNode {
   aiSummary: string | null;
   citedUrls: string[];
   citedArxivPapers: PaperMetadata[];
+  notes: string;
 
   constructor(rawPaperMetadata: PaperMetadata) {
     super(NodeType.PAPER);
@@ -13,6 +14,7 @@ export class PaperNode extends GenericNode {
     this.aiSummary = null;
     this.citedUrls = [];
     this.citedArxivPapers = [];
+    this.notes = "";
   }
 
   getAiStringDescription(): string {

@@ -118,7 +118,16 @@ export default function AddNodeButton({
             >
               <p className="text-sm font-bold">{retrievedPaper.title}</p>
               <p className="text-xs text-muted-foreground">
-                {retrievedPaper.authors?.join(", ") || "Unknown authors"}
+                {retrievedPaper.authors
+                  ? retrievedPaper.authors.join(", ").length > 20
+                    ? retrievedPaper.authors
+                        .slice(
+                          0,
+                          retrievedPaper.authors.join(", ").lastIndexOf(",", 20)
+                        )
+                        .join(", ") + " et al."
+                    : retrievedPaper.authors.join(", ")
+                  : "Unknown authors"}
               </p>
               {retrievedPaper.publishDate && (
                 <p className="text-xs text-muted-foreground">

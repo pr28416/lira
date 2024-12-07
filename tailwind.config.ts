@@ -9,9 +9,21 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-geist-sans)", "sans-serif"],
+        mono: ["var(--font-roboto-mono)", "monospace"],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        questionCard: {
+          DEFAULT: "var(--question-card)",
+          foreground: "hsl(var(--question-card-foreground))",
+        },
+        paperCard: {
+          DEFAULT: "var(--paper-card)",
+          foreground: "var(--paper-card-foreground)",
+        },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",

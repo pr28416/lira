@@ -14,6 +14,10 @@ body {
     --muted-foreground: 253 13% 63%;
     --popover: 253 43% 3%;
     --popover-foreground: 253 31% 98%;
+    --question-card: 270 25% 12%; /* Rich dark purple */
+    --question-card-foreground: 270 35% 95%; /* Bright lavender */
+    --paper-card: 255 20% 10%; /* Deep purple-gray */
+    --paper-card-foreground: 255 30% 90%; /* Soft lavender */
     --card: 253 43% 4%;
     --card-foreground: 253 31% 99%;
     --border: 215 27.9% 16.9%;
@@ -41,6 +45,10 @@ body {
     --muted-foreground: 253 13% 63%;
     --popover: 253 43% 3%;
     --popover-foreground: 253 31% 98%;
+    --question-card: #745e66; /* Rich dark purple */
+    --question-card-foreground: 270 35% 95%; /* Bright lavender */
+    --paper-card: #3c446c; /* Deep purple-gray */
+    --paper-card-foreground: #4C3960; /* Soft lavender */
     --card: 253 43% 4%;
     --card-foreground: 253 31% 99%;
     --border: 215 27.9% 16.9%;
