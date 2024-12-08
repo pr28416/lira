@@ -7,6 +7,8 @@ import { Button } from "../button";
 import { useState } from "react";
 import { Node } from "@xyflow/react";
 import { cn } from "@/lib/utils";
+import ArxivAiSearchModal from "../nodes/arxiv-ai-search-modal";
+import { FlowNodeData } from "@/lib/engine/types";
 
 export default function QuestionDetailView({ node }: { node: Node }) {
   const questionNode = node.data.node as QuestionNode;
@@ -66,6 +68,13 @@ export default function QuestionDetailView({ node }: { node: Node }) {
         <Button onClick={handleSave} className="w-full">
           Save
         </Button>
+      </div>
+      <div className="w-full">
+        <ArxivAiSearchModal flowNodeData={node.data as FlowNodeData}>
+          <Button variant="outline" className="w-full">
+            Search on ArXiv for related papers
+          </Button>
+        </ArxivAiSearchModal>
       </div>
     </div>
   );

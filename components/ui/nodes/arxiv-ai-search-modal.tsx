@@ -11,27 +11,28 @@ import {
 import { ReactNode, useEffect, useState } from "react";
 import { DialogHeader } from "../dialog";
 import { Button } from "../button";
-import { PaperMetadata } from "@/lib/engine/types";
+import { FlowNodeData, PaperMetadata } from "@/lib/engine/types";
 import { QuestionNode } from "@/lib/engine/nodes/question-node";
 import { Minus, Plus, RefreshCcw } from "lucide-react";
 import { AiSearchArxivProgressResponse } from "@/lib/engine/services/arxiv/types";
 import { AiSearchArxivResponse } from "@/lib/engine/services/arxiv/types";
-import { cn, getNewNodePositions, getRandomPosition } from "@/lib/utils";
+import { cn, getNewNodePositions } from "@/lib/utils";
 import { useFlow } from "@/contexts/node-context";
 import { PaperNode } from "@/lib/engine/nodes/paper-node";
 
 export default function ArxivAiSearchModal({
-  question,
+  flowNodeData,
   children,
 }: {
-  question: QuestionNode;
+  flowNodeData: FlowNodeData;
   children: ReactNode;
 }) {
+  const questionNode = flowNodeData.node as QuestionNode;
   const [results, setResults] = useState<PaperMetadata[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedResultUrls, setSelectedResultUrls] = useState<string[]>([]);
-  const { nodes, onNodesChange, addNode, addEdgeBetweenNodes } = useFlow();
+  const { nodes, addNode, addEdgeBetweenNodes } = useFlow();
 
   const handleSearch = async () => {
     try {
@@ -39,7 +40,7 @@ export default function ArxivAiSearchModal({
       setMessage("Searching ArXiv...");
       const response = await fetch("/api/arxiv/ai-search", {
         method: "POST",
-        body: JSON.stringify({ query: question.question, maxResults: 10 }),
+        body: JSON.stringify({ query: questionNode.question, maxResults: 15 }),
       });
 
       const reader = response.body?.getReader();
@@ -76,6 +77,8 @@ export default function ArxivAiSearchModal({
   };
 
   const handleOpenChange = (open: boolean) => {
+    setResults([]);
+    setSelectedResultUrls([]);
     if (open) {
       handleSearch();
     }
@@ -90,7 +93,7 @@ export default function ArxivAiSearchModal({
   };
 
   const handleAddResults = () => {
-    const questionNode = nodes.find((node) => node.id === question.id);
+    const questionNode = nodes.find((node) => node.id === flowNodeData.node.id);
     if (!questionNode) return;
 
     console.log("Question node", questionNode);
@@ -107,14 +110,14 @@ export default function ArxivAiSearchModal({
       if (paperMetadata) {
         const paperNode = new PaperNode(paperMetadata);
         addNode(paperNode, newPositions[index]);
-        addEdgeBetweenNodes(question, paperNode);
+        addEdgeBetweenNodes(flowNodeData.node, paperNode);
       }
     });
   };
 
   useEffect(() => {
     setSelectedResultUrls([]);
-  }, [question, results]);
+  }, [questionNode.question, results]);
 
   return (
     <Dialog onOpenChange={handleOpenChange}>
@@ -150,7 +153,16 @@ export default function ArxivAiSearchModal({
               rel="noopener noreferrer"
             >
               <div className="flex justify-between">
-                <p className="text-sm font-semibold">{paper.title}</p>
+                <div className="flex flex-col gap-1">
+                  {paper.authors && (
+                    <p className="text-xs text-muted-foreground">
+                      {paper.authors?.length > 2
+                        ? `${paper.authors[0]} et al.`
+                        : paper.authors?.join(", ") || "Unknown authors"}
+                    </p>
+                  )}
+                  <p className="text-sm font-semibold">{paper.title}</p>
+                </div>
                 <Button
                   variant="outline"
                   size="icon"
@@ -171,13 +183,7 @@ export default function ArxivAiSearchModal({
                   )}
                 </Button>
               </div>
-              {paper.authors && (
-                <p className="text-xs text-muted-foreground">
-                  {paper.authors?.length > 2
-                    ? `${paper.authors[0]} et al.`
-                    : paper.authors?.join(", ") || "Unknown authors"}
-                </p>
-              )}
+
               <p className="text-xs">{paper.abstract}</p>
             </a>
           ))}
@@ -188,7 +194,7 @@ export default function ArxivAiSearchModal({
             disabled={selectedResultUrls.length === 0 || isSearching}
             onClick={handleAddResults}
           >
-            Add {selectedResultUrls.length} result
+            Add {selectedResultUrls.length} paper
             {selectedResultUrls.length === 1 ? "" : "s"}
           </Button>
         </DialogClose>

@@ -175,7 +175,7 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
             </Button>
           )}
         {data.node.type === NodeType.QUESTION && (
-          <ArxivAiSearchModal question={data.node as QuestionNode}>
+          <ArxivAiSearchModal flowNodeData={data}>
             <Button
               variant="outline"
               size="icon"
