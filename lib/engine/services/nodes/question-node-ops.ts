@@ -51,7 +51,7 @@ export async function generateAiFollowUpQuestionsFromPaperAndQuestions(
 And these existing questions:
 ${questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 
-First analyze the paper summary and existing questions to identify gaps and interesting angles that haven't been explored yet. Then generate 3-5 follow-up questions that would help expand past the current questions using an understanding of the paper while avoiding redundancy with the existing questions.`,
+First analyze the paper summary and existing questions to identify gaps and interesting angles that haven't been explored yet. Then generate 3-5 follow-up questions that would help expand past the current questions using an understanding of the paper while avoiding redundancy with the existing questions. Include both questions that are specific to concepts in the paper and questions that are more general.`,
       },
     ],
   });

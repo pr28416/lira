@@ -24,3 +24,13 @@ export type ExtractReferencesResponse = {
   papers: PaperMetadata[];
   nonPapers: string[];
 };
+
+export type AiSearchArxivResponse = {
+  paperMetadata: PaperMetadata[];
+};
+
+export type AiSearchArxivProgressResponse = {
+  attemptNumber: number;
+  nextAiSearchQuery: string;
+  totalPapersFound: number;
+};

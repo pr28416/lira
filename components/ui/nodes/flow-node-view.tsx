@@ -14,6 +14,7 @@ import { QuestionNode } from "@/lib/engine/nodes/question-node";
 import { useToast } from "@/hooks/use-toast";
 import { connectNodes, GenericNode } from "@/lib/engine/nodes/generic-node";
 import { ConceptNode } from "@/lib/engine/nodes/concept-node";
+import ArxivAiSearchModal from "./arxiv-ai-search-modal";
 
 function NodePicker({ nodeProps }: { nodeProps: NodeProps<FlowNode> }) {
   const { data } = nodeProps;
@@ -66,7 +67,10 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
       x,
       y,
     });
-    addEdgeBetweenNodes(data.node as GenericNode, newNode.data.node as GenericNode);
+    addEdgeBetweenNodes(
+      data.node as GenericNode,
+      newNode.data.node as GenericNode
+    );
   };
 
   // Only for paper nodes
@@ -145,9 +149,9 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
     }
   };
 
-  const handleAISearchFromQuestion = () => {
-    console.log("Searching for answer from question");
-  };
+  //   const handleAISearchFromQuestion = () => {
+  //     console.log("Searching for answer from question");
+  //   };
 
   return (
     <Fragment>
@@ -171,19 +175,22 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
             </Button>
           )}
         {data.node.type === NodeType.QUESTION && (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleAISearchFromQuestion}
-            className="hover:border-primary hover:text-primary relative group"
-          >
-            <Search />
-            <div className="absolute left-full ml-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-20px] group-hover:translate-x-0 whitespace-nowrap">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent text-xs">
-                Search on ArXiv
+          <ArxivAiSearchModal question={data.node as QuestionNode}>
+            <Button
+              variant="outline"
+              size="icon"
+              // onClick={handleAISearchFromQuestion}
+              className="hover:border-primary hover:text-primary relative group"
+              disabled={(data.node as QuestionNode).question.length === 0}
+            >
+              <Search />
+              <div className="absolute left-full ml-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-20px] group-hover:translate-x-0 whitespace-nowrap">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent text-xs">
+                  Search on ArXiv
+                </div>
               </div>
-            </div>
-          </Button>
+            </Button>
+          </ArxivAiSearchModal>
         )}
         <Button
           variant="outline"
@@ -220,8 +227,8 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
           data.node.type === NodeType.CONCEPT && "bg-card",
           selectedNode?.id === nodeProps.id && "border border-primary",
           selectedNode !== null &&
-              selectedNode.id !== nodeProps.id &&
-              "opacity-30"
+            selectedNode.id !== nodeProps.id &&
+            "opacity-30"
         )}
       >
         <NodePicker nodeProps={nodeProps} />

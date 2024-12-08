@@ -114,7 +114,7 @@ export async function createPaperNodeFromArxiv(
   const keywords =
     keywordsResponse.choices[0]?.message?.parsed?.keywordsDescribingPaper;
   // Create paper node
-  console.log("keywords", keywords);
+  // console.log("keywords", keywords);
   return new PaperNode({
     DOI: DOI,
     URL: `https://arxiv.org/abs/${cleanId}`,

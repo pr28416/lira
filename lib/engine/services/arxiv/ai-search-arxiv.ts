@@ -1,9 +1,6 @@
 import { openai } from "@/lib/ai/openai";
 
-export async function aiSearchArxiv(
-  query: string,
-  maxResults: number = 10
-): Promise<string[]> {
+export async function getAiSearchQuery(query: string): Promise<string | null> {
   // First, get the optimized search query from GPT
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -11,13 +8,22 @@ export async function aiSearchArxiv(
       {
         role: "system",
         content:
-          "Given a user search request, transform it into the right ArXiv search query. Only return the query, no other text.",
+          "Given a user search request, transform it into the right ArXiv search query. Only return the query, no other text. Do not wrap the query in quotation marks.",
       },
       { role: "user", content: query },
     ],
+    temperature: 0.3,
   });
 
-  const searchQuery = response.choices[0].message.content;
+  return response.choices[0].message.content ?? null;
+}
+
+export async function aiSearchArxiv(
+  query: string,
+  maxResults: number = 10,
+  useAiQuery: boolean = true
+): Promise<string[]> {
+  const searchQuery = useAiQuery ? await getAiSearchQuery(query) : query;
   if (!searchQuery) return [];
 
   console.log("Search query:", searchQuery);

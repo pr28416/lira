@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
       for await (const update of generator) {
         // Write the JSON update directly to the stream
-        console.log("Writing update", JSON.stringify(update));
+        // console.log("Writing update", JSON.stringify(update));
         await writer.write(`${JSON.stringify(update)}\n`);
       }
     } finally {
