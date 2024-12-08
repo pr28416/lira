@@ -6,13 +6,14 @@ import PaperNodeView from "./paper-flow-node-view";
 import InsightNodeView from "./insight-flow-node-view";
 import QuestionNodeView from "./question-flow-node-view";
 import { Button } from "../button";
-import { Plus, Trash2 } from "lucide-react";
+import { FileQuestion, Search, StickyNote, Trash2 } from "lucide-react";
 import { useFlow } from "@/contexts/node-context";
-import { cn, getNodeTypeColor } from "@/lib/utils";
+import { cn, getNodeTypeColor, getRandomPosition } from "@/lib/utils";
 import { PaperNode } from "@/lib/engine/nodes/paper-node";
 import { QuestionNode } from "@/lib/engine/nodes/question-node";
 import { useToast } from "@/hooks/use-toast";
-import { connectNodes } from "@/lib/engine/nodes/generic-node";
+import { connectNodes, GenericNode } from "@/lib/engine/nodes/generic-node";
+import { ConceptNode } from "@/lib/engine/nodes/concept-node";
 
 function NodePicker({ nodeProps }: { nodeProps: NodeProps<FlowNode> }) {
   const { data } = nodeProps;
@@ -55,6 +56,17 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
         type: "remove",
       },
     ]);
+  };
+
+  const handleAddConcept = () => {
+    const node = selectedNode as FlowNode;
+    if (!node) return;
+    const { x, y } = getRandomPosition(node, 200);
+    const newNode = addNode(new ConceptNode(""), {
+      x,
+      y,
+    });
+    addEdgeBetweenNodes(data.node as GenericNode, newNode.data.node as GenericNode);
   };
 
   // Only for paper nodes
@@ -139,38 +151,65 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
 
   return (
     <Fragment>
-      <NodeToolbar className="flex flex-row gap-2" position={Position.Bottom}>
+      <NodeToolbar className="flex flex-col gap-2" position={Position.Right}>
         {data.node.type === NodeType.PAPER &&
           ((data.node as PaperNode).notes ||
             (data.node as PaperNode).aiSummary) && (
             <Button
               variant="outline"
-              // size="icon"
+              size="icon"
               onClick={handleGenerateFollowUpQuestionsFromPaper}
               disabled={isGeneratingFollowUpQuestions}
+              className="hover:border-primary hover:text-primary relative group"
             >
-              <Plus />
-              {/* Added hover effect to make it look like AI action */}
-              <div className="hover:bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text hover:text-transparent text-xs">
-                Follow-up questions
+              <FileQuestion />
+              <div className="absolute left-full ml-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-20px] group-hover:translate-x-0 whitespace-nowrap">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent text-xs">
+                  Follow-up questions
+                </div>
               </div>
             </Button>
           )}
         {data.node.type === NodeType.QUESTION && (
-          <Button variant="outline" onClick={handleAISearchFromQuestion}>
-            <Plus />
-            <div className="hover:bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text hover:text-transparent text-xs">
-              AI search on ArXiv
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleAISearchFromQuestion}
+            className="hover:border-primary hover:text-primary relative group"
+          >
+            <Search />
+            <div className="absolute left-full ml-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-20px] group-hover:translate-x-0 whitespace-nowrap">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent text-xs">
+                Search on ArXiv
+              </div>
             </div>
           </Button>
         )}
         <Button
           variant="outline"
           size="icon"
-          className="hover:bg-destructive hover:text-destructive-foreground"
+          className="hover:border-primary hover:text-primary relative group"
+          onClick={handleAddConcept}
+        >
+          <StickyNote />
+          <div className="absolute left-full ml-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-20px] group-hover:translate-x-0 whitespace-nowrap">
+            <div className="bg-gradient-to-r from-white to-white bg-clip-text text-transparent text-xs">
+              Add concept
+            </div>
+          </div>
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="hover:bg-destructive hover:text-destructive-foreground relative group"
           onClick={handleDelete}
         >
           <Trash2 />
+          <div className="absolute left-full ml-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-20px] group-hover:translate-x-0 whitespace-nowrap">
+            <div className="bg-gradient-to-r from-white to-white bg-clip-text text-transparent text-xs">
+              Delete
+            </div>
+          </div>
         </Button>
       </NodeToolbar>
       <div
@@ -200,7 +239,7 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
       </div>
       <Handle
         type="source"
-        position={Position.Top}
+        position={Position.Bottom}
         isConnectable={true}
         style={{ width: 10, height: 10 }}
       />

@@ -7,6 +7,7 @@ export class PaperNode extends GenericNode {
   citedUrls: string[];
   citedArxivPapers: PaperMetadata[];
   notes: string;
+  isSummarizing: boolean;
 
   constructor(rawPaperMetadata: PaperMetadata) {
     super(NodeType.PAPER);
@@ -15,6 +16,7 @@ export class PaperNode extends GenericNode {
     this.citedUrls = [];
     this.citedArxivPapers = [];
     this.notes = "";
+    this.isSummarizing = false;
   }
 
   getAiStringDescription(): string {
@@ -29,5 +31,13 @@ export class PaperNode extends GenericNode {
 
   setAiSummary(summary: string) {
     this.aiSummary = summary;
+  }
+
+  setIsSummarizing(isSummarizing: boolean) {
+    this.isSummarizing = isSummarizing;
+  }
+
+  getIsSummarizing(): boolean {
+    return this.isSummarizing;
   }
 }

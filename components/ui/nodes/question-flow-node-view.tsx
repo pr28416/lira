@@ -10,7 +10,7 @@ export default function QuestionNodeView({
   const questionNode = data.node as QuestionNode;
 
   return questionNode.question ? (
-    <p className="p-2 text-wrap bg-blue-200 dark:bg-blue-950">
+    <p className="p-2 text-wrap">
       {questionNode.question}
     </p>
   ) : (

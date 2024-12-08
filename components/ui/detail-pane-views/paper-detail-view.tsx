@@ -278,15 +278,17 @@ export default function PaperDetailView({ node }: { node: Node }) {
           </div>
         </TabsContent>
         <TabsContent value="paper_summary">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 pb-4">
             {/* AI summary section */}
-            <Button
-              variant="outline"
-              onClick={handleSummarizePaper}
-              disabled={isSummarizing}
-            >
-              Summarize paper with AI
-            </Button>
+            {!aiSummary && (
+              <Button
+                variant="outline"
+                onClick={handleSummarizePaper}
+                disabled={isSummarizing}
+              >
+                Summarize paper with AI
+              </Button>
+            )}
 
             {isSummarizing && <Progress value={percentComplete} />}
 

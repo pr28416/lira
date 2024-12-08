@@ -12,7 +12,6 @@ export function getPdfLinkFromArxiv(arxivLink: string) {
 async function summarizePage(
   page: number,
   pageText: string,
-  tokensPerPage: number
 ) {
   const prompt = `Summarize this page from an academic paper: "${pageText}"`;
 
@@ -27,14 +26,9 @@ async function summarizePage(
 
 export async function* getPaperSummary(
   arxivLink: string,
-  maxTokens: number = 128000,
   maxSummaryTokens: number = 1024
 ): AsyncGenerator<PaperSummaryProgress | PaperSummaryChunk | PaperSummary> {
   const pageTexts = await getPaginatedPDFTextFromArxivLink(arxivLink);
-
-  const tokensPerPage = Math.floor(
-    (maxTokens - maxSummaryTokens) / pageTexts.length
-  );
 
   let completedPages = 0;
   const totalPages = pageTexts.length;
@@ -45,7 +39,7 @@ export async function* getPaperSummary(
     const pageText = pageTexts[i];
 
     if (pageText) {
-      pageSummaries[i] = await summarizePage(i + 1, pageText, tokensPerPage);
+      pageSummaries[i] = await summarizePage(i + 1, pageText);
     } else {
       pageSummaries[i] = "";
     }

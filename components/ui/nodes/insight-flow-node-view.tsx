@@ -11,7 +11,7 @@ export default function InsightNodeView({
   const insightNode = data.node as InsightNode;
 
   return (
-    <div className="p-2 text-wrap bg-teal-100 dark:bg-teal-950">
+    <div className="p-2 text-wrap">
       {insightNode.conclusion}
     </div>
   );
