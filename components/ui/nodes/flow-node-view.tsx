@@ -175,15 +175,14 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
       </NodeToolbar>
       <div
         className={cn(
-          "flex flex-col bg-card divide-y shadow-md border max-w-sm",
+          "flex flex-col divide-y shadow-md border max-w-sm",
+          data.node.type === NodeType.PAPER && "bg-paperCard",
+          data.node.type === NodeType.QUESTION && "bg-questionCard",
+          data.node.type === NodeType.CONCEPT && "bg-card",
           selectedNode?.id === nodeProps.id && "border border-primary",
-          (selectedNode as FlowNode)?.data.node.neighbors
-            .map((n) => n.id)
-            .includes(data.node.id)
-            ? "border border-red-500 opacity-65"
-            : selectedNode !== null &&
-                selectedNode.id !== nodeProps.id &&
-                "opacity-30"
+          selectedNode !== null &&
+              selectedNode.id !== nodeProps.id &&
+              "opacity-30"
         )}
       >
         <NodePicker nodeProps={nodeProps} />

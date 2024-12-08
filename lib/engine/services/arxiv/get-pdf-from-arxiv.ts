@@ -19,7 +19,6 @@ async function summarizePage(
   const completion = await openai.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
     model: "gpt-4o-mini",
-    max_tokens: tokensPerPage,
   });
 
   console.log(`Page ${page} processed`);

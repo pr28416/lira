@@ -46,42 +46,40 @@ export function loadCitedPapers(
   fetch("/api/arxiv/extract-references", {
     method: "POST",
     body: JSON.stringify({ arxivLink: paperNode.rawPaperMetadata?.URL }),
-  })
-    .then(async (response) => {
-      const citedArxivPapers: ExtractReferencesResponse = await response.json();
+  }).then(async (response) => {
+    const citedArxivPapers: ExtractReferencesResponse = await response.json();
 
-      const newCitedArxivPapers = citedArxivPapers.papers;
-      citedArxivPapers.papers.forEach((paper, index) => {
-        if (paper.title === paperNode.rawPaperMetadata?.title) {
-          newCitedArxivPapers.splice(index, 1);
-        }
-      });
-
-      paperNode.citedArxivPapers = newCitedArxivPapers;
-      paperNode.citedUrls = citedArxivPapers.nonPapers;
-      onNodesChange([
-        {
-          id: paperNode.id,
-          type: "replace",
-          item: {
-            id: paperNode.id,
-            data: { node: paperNode },
-            type: "flowNode",
-            position: node.position,
-          },
-        },
-      ]);
-
-      if (setIsLoadingCitedPapers) {
-        setIsLoadingCitedPapers(false);
+    const newCitedArxivPapers = citedArxivPapers.papers;
+    citedArxivPapers.papers.forEach((paper, index) => {
+      if (paper.title === paperNode.rawPaperMetadata?.title) {
+        newCitedArxivPapers.splice(index, 1);
       }
-
-      toast?.("Citations", "Cited papers loaded.", true);
-    })
-    .catch((error) => {
-      console.error("Error loading cited papers", error);
-      toast?.("Citations", "Error loading cited papers", true);
     });
+
+    paperNode.citedArxivPapers = newCitedArxivPapers;
+    paperNode.citedUrls = citedArxivPapers.nonPapers;
+    onNodesChange([
+      {
+        id: paperNode.id,
+        type: "replace",
+        item: {
+          id: paperNode.id,
+          data: { node: paperNode },
+          type: "flowNode",
+          position: node.position,
+        },
+      },
+    ]);
+
+    if (setIsLoadingCitedPapers) {
+      setIsLoadingCitedPapers(false);
+    }
+
+    toast?.("Citations", "Cited papers loaded.", true);
+  }).catch((error) => {
+    console.error("Error loading cited papers", error);
+    toast?.("Citations", "Error loading cited papers", true);
+  });
 }
 
 export function getRandomPosition(
@@ -132,19 +130,11 @@ export const summarizePaper = async (
             | PaperSummaryChunk
             | PaperSummaryProgress
             | PaperSummary = JSON.parse(line);
-          if ("progress" in update) {
-            toast(
-              "Summarizing paper",
-              `${update.progress} / ${update.total}`,
-              false
-            );
-          } else if ("summaryChunk" in update) {
-            // console.log("Got new summary chunk", update.summaryChunk);
+          if ("summaryChunk" in update) {
             paperNode.setAiSummary(
               paperNode.getAiSummary() + update.summaryChunk
             );
           } else if ("pageSummaries" in update) {
-            console.log("Got final summary");
             paperNode.setAiSummary(update.summary);
             onNodesChange([
               {
