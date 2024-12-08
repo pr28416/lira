@@ -2,8 +2,14 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { NodeType } from "./engine/types";
 import { PaperNode } from "./engine/nodes/paper-node";
-import { ExtractReferencesResponse } from "./engine/services/arxiv/types";
+import {
+  ExtractReferencesResponse,
+  PaperSummary,
+  PaperSummaryProgress,
+  PaperSummaryChunk,
+} from "./engine/services/arxiv/types";
 import { Node, NodeChange } from "@xyflow/react";
+import { extractArxivId } from "./engine/services/arxiv/extract-arxiv-id";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,48 +34,60 @@ export function loadCitedPapers(
   paperNode: PaperNode,
   node: Node,
   onNodesChange: (changes: NodeChange[]) => void,
-  setIsLoadingCitedPapers?: (isLoading: boolean) => void
+  setIsLoadingCitedPapers?: (isLoading: boolean) => void,
+  toast?: (title: string, description: string, isDone: boolean) => void
 ) {
   if (setIsLoadingCitedPapers) {
     setIsLoadingCitedPapers(true);
   }
 
+  toast?.("Citations", "Loading cited papers...", false);
+
   fetch("/api/arxiv/extract-references", {
     method: "POST",
     body: JSON.stringify({ arxivLink: paperNode.rawPaperMetadata?.URL }),
-  }).then(async (response) => {
-    const citedArxivPapers: ExtractReferencesResponse =
-      await response.json();
+  })
+    .then(async (response) => {
+      const citedArxivPapers: ExtractReferencesResponse = await response.json();
 
-    const newCitedArxivPapers = citedArxivPapers.papers;
-    citedArxivPapers.papers.forEach((paper, index) => {
-      if (paper.title === paperNode.rawPaperMetadata?.title) {
-        newCitedArxivPapers.splice(index, 1);
-      }
-    });
+      const newCitedArxivPapers = citedArxivPapers.papers;
+      citedArxivPapers.papers.forEach((paper, index) => {
+        if (paper.title === paperNode.rawPaperMetadata?.title) {
+          newCitedArxivPapers.splice(index, 1);
+        }
+      });
 
-    paperNode.citedArxivPapers = newCitedArxivPapers;
-    paperNode.citedUrls = citedArxivPapers.nonPapers;
-    onNodesChange([
-      {
-        id: paperNode.id,
-        type: "replace",
-        item: {
+      paperNode.citedArxivPapers = newCitedArxivPapers;
+      paperNode.citedUrls = citedArxivPapers.nonPapers;
+      onNodesChange([
+        {
           id: paperNode.id,
-          data: { node: paperNode },
-          type: "flowNode",
-          position: node.position,
+          type: "replace",
+          item: {
+            id: paperNode.id,
+            data: { node: paperNode },
+            type: "flowNode",
+            position: node.position,
+          },
         },
-      },
-    ]);
+      ]);
 
-    if (setIsLoadingCitedPapers) {
-      setIsLoadingCitedPapers(false);
-    }
-  });
+      if (setIsLoadingCitedPapers) {
+        setIsLoadingCitedPapers(false);
+      }
+
+      toast?.("Citations", "Cited papers loaded.", true);
+    })
+    .catch((error) => {
+      console.error("Error loading cited papers", error);
+      toast?.("Citations", "Error loading cited papers", true);
+    });
 }
 
-export function getRandomPosition(node: Node, distance: number): { x: number; y: number } {
+export function getRandomPosition(
+  node: Node,
+  distance: number
+): { x: number; y: number } {
   const centerX = node.position.x + (node.width ?? 0) / 2;
   const centerY = node.position.y + (node.height ?? 0) / 2;
 
@@ -80,3 +98,76 @@ export function getRandomPosition(node: Node, distance: number): { x: number; y:
 
   return { x, y };
 }
+
+export const summarizePaper = async (
+  paperNode: PaperNode,
+  node: Node,
+  onNodesChange: (changes: NodeChange[]) => void,
+  toast: (title: string, description: string, isDone: boolean) => void
+) => {
+  try {
+    toast("Summarizing paper", "Summarizing paper...", false);
+    const arxivLink = paperNode.rawPaperMetadata?.URL;
+    if (!extractArxivId(arxivLink ?? "")) {
+      return;
+    }
+    const response = await fetch("/api/arxiv/summarize-pdf", {
+      method: "POST",
+      body: JSON.stringify({ arxivLink }),
+    });
+
+    const reader = response.body?.getReader();
+
+    while (true) {
+      const { done, value } = (await reader?.read()) ?? {};
+      if (done) break;
+
+      // Each chunk will contain complete JSON lines
+      const lines = new TextDecoder().decode(value).split("\n");
+      paperNode.setAiSummary("");
+
+      for (const line of lines) {
+        if (line.trim()) {
+          const update:
+            | PaperSummaryChunk
+            | PaperSummaryProgress
+            | PaperSummary = JSON.parse(line);
+          if ("progress" in update) {
+            toast(
+              "Summarizing paper",
+              `${update.progress} / ${update.total}`,
+              false
+            );
+          } else if ("summaryChunk" in update) {
+            // console.log("Got new summary chunk", update.summaryChunk);
+            paperNode.setAiSummary(
+              paperNode.getAiSummary() + update.summaryChunk
+            );
+          } else if ("pageSummaries" in update) {
+            console.log("Got final summary");
+            paperNode.setAiSummary(update.summary);
+            onNodesChange([
+              {
+                id: paperNode.id,
+                type: "replace",
+                item: {
+                  id: paperNode.id,
+                  data: { node: paperNode },
+                  type: "flowNode",
+                  position: {
+                    x: node.position.x,
+                    y: node.position.y,
+                  },
+                },
+              },
+            ]);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error summarizing paper", error);
+  } finally {
+    toast("Summarizing paper", "Summarizing paper done!", true);
+  }
+};

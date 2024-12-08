@@ -30,7 +30,8 @@ import { getRandomPosition, loadCitedPapers } from "@/lib/utils";
 export default function PaperDetailView({ node }: { node: Node }) {
   const paperNode = node.data.node as PaperNode;
   const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
-  const [isLoadingCitedPapers, setIsLoadingCitedPapers] = useState<boolean>(false);
+  const [isLoadingCitedPapers, setIsLoadingCitedPapers] =
+    useState<boolean>(false);
   const [aiSummary, setAiSummary] = useState<string>(
     paperNode.getAiSummary() ?? ""
   );
@@ -38,6 +39,10 @@ export default function PaperDetailView({ node }: { node: Node }) {
   const { nodes, onNodesChange, addNode, addEdgeBetweenNodes } = useFlow();
   const [isAddingConcepts, setIsAddingConcepts] = useState<boolean>(false);
   const conceptGenerationToast = useToast();
+
+  useEffect(() => {
+    setAiSummary(paperNode.getAiSummary() ?? "");
+  }, [paperNode.aiSummary]);
 
   useEffect(() => {
     console.log(
@@ -240,7 +245,9 @@ export default function PaperDetailView({ node }: { node: Node }) {
               ? paperNode.rawPaperMetadata.authors
                   .slice(
                     0,
-                    paperNode.rawPaperMetadata.authors.join(", ").lastIndexOf(",", 20)
+                    paperNode.rawPaperMetadata.authors
+                      .join(", ")
+                      .lastIndexOf(",", 20)
                   )
                   .join(", ") + " et al."
               : paperNode.rawPaperMetadata.authors.join(", ")
@@ -261,6 +268,7 @@ export default function PaperDetailView({ node }: { node: Node }) {
         <TabsContent value="notes" className="h-full">
           <div className="flex flex-col gap-2 h-full">
             <textarea
+              placeholder="Add notes about this paper..."
               className="w-full bg-transparent border border-white/20 rounded-lg p-2 outline-none resize-none h-full"
               defaultValue={paperNode.notes}
               onChange={(e) => {
@@ -348,7 +356,11 @@ export default function PaperDetailView({ node }: { node: Node }) {
                   <div className="flex justify-between">
                     <p className="text-sm font-semibold">{paper.title}</p>
                     <div className="flex flex-row gap-2">
-                      {nodes.find((n) => (n.data.node as PaperNode).rawPaperMetadata?.title === paper.title) ? null : (
+                      {nodes.find(
+                        (n) =>
+                          (n.data.node as PaperNode).rawPaperMetadata?.title ===
+                          paper.title
+                      ) ? null : (
                         <Button
                           size="icon"
                           className="h-8 w-8 rounded-full min-h-8 min-w-8"

@@ -19,15 +19,22 @@ import { useState } from "react";
 import { useFlow } from "@/contexts/node-context";
 import AddNodeButton from "@/components/ui/add-node-button";
 import { PaperMetadata } from "@/lib/engine/types";
-import { loadCitedPapers } from "@/lib/utils";
-
+import { loadCitedPapers, summarizePaper } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const nodeTypes = {
   flowNode: FlowNodeView,
 };
 
-export function ReactFlowCanvas({setDetailPaneOpen}: {setDetailPaneOpen: (x: boolean) => void}) {
-  const [lastPos, setLastPos] = useState<{x: number, y: number}>({x: 0, y: 0});
+export function ReactFlowCanvas({
+  setDetailPaneOpen,
+}: {
+  setDetailPaneOpen: (x: boolean) => void;
+}) {
+  const [lastPos, setLastPos] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
 
   const { setCenter } = useReactFlow();
 
@@ -41,8 +48,18 @@ export function ReactFlowCanvas({setDetailPaneOpen}: {setDetailPaneOpen: (x: boo
     setSelectedNode,
   } = useFlow();
 
+  const globalToaster = useToast();
+
+  const handleToast = (title: string, description: string, isDone: boolean) => {
+    globalToaster.toast({
+      title: title,
+      description: description,
+      duration: isDone ? 5 * 1000 : 10 * 60 * 1000,
+    });
+  };
+
   const handleClick = (event: React.MouseEvent<HTMLDivElement>): void => {
-    setLastPos({x: event.pageX, y: event.pageY});
+    setLastPos({ x: event.pageX, y: event.pageY });
     console.log("Set last position!");
     console.log(lastPos);
   };
@@ -69,7 +86,14 @@ export function ReactFlowCanvas({setDetailPaneOpen}: {setDetailPaneOpen: (x: boo
         if (!newNode) {
           return;
         }
-        loadCitedPapers(newPaper, newNode, onNodesChange);
+        loadCitedPapers(
+          newPaper,
+          newNode,
+          onNodesChange,
+          () => {},
+          handleToast
+        );
+        summarizePaper(newPaper, newNode, onNodesChange, handleToast);
         break;
       // case AddNodeButtonOption.CONCEPT:
       //   newNode = addNode(new ConceptNode(content as string), {
@@ -91,7 +115,10 @@ export function ReactFlowCanvas({setDetailPaneOpen}: {setDetailPaneOpen: (x: boo
       setSelectedNode(newNode);
       setDetailPaneOpen(true);
       setTimeout(() => {
-        setCenter(newNode.position.x + 175, newNode.position.y, {zoom: 1, duration: 800})
+        setCenter(newNode.position.x + 175, newNode.position.y, {
+          zoom: 1,
+          duration: 800,
+        });
       }, 100);
     }
   };
@@ -110,7 +137,10 @@ export function ReactFlowCanvas({setDetailPaneOpen}: {setDetailPaneOpen: (x: boo
         setSelectedNode(node);
         setDetailPaneOpen(true);
         setTimeout(() => {
-          setCenter(node.position.x + 175, node.position.y, {zoom: 0.9, duration: 1000});
+          setCenter(node.position.x + 175, node.position.y, {
+            zoom: 0.9,
+            duration: 1000,
+          });
         }, 100);
       }}
       onPaneClick={() => {

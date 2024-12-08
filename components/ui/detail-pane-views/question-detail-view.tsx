@@ -41,7 +41,7 @@ export default function QuestionDetailView({ node }: { node: Node }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 items-center justify-between w-full h-full">
+    <div className="flex flex-col gap-4 items-center w-full h-full">
       <div className="flex flex-col gap-2 w-full">
         <TextareaAutosize
           value={question}

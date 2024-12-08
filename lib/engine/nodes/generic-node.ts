@@ -19,6 +19,9 @@ export class GenericNode {
   }
 
   addNeighbor(node: GenericNode) {
+    if (this.neighbors.map((n) => n.id).includes(node.id)) {
+      return;
+    }
     this.neighbors.push(node);
   }
 

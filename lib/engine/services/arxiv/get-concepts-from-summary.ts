@@ -6,9 +6,9 @@ import {
   ConceptNodeData,
   createConceptNodeDataFromNode,
 } from "../../nodes/concept-node";
-import { connectNodes } from "../../nodes/generic-node";
+// import { connectNodes } from "../../nodes/generic-node";
 import { ConceptGenerationProgress } from "./types";
-import { z } from "zod";
+// import { z } from "zod";
 
 export default async function* getConceptsFromSummary(
   summary: string
@@ -87,17 +87,17 @@ export default async function* getConceptsFromSummary(
     }
   }
 
-  // Analyze all pairs in parallel
-  const analysisResults = await Promise.all(
-    nodePairs.map(([node1, node2]) => analyzeNodePair(node1, node2))
-  );
+  //   // Analyze all pairs in parallel
+  //   const analysisResults = await Promise.all(
+  //     nodePairs.map(([node1, node2]) => analyzeNodePair(node1, node2))
+  //   );
 
-  // Create connections based on results
-  analysisResults.forEach(({ node1, node2, shouldConnect }) => {
-    if (shouldConnect) {
-      connectNodes(node1, node2);
-    }
-  });
+  //   // Create connections based on results
+  //   analysisResults.forEach(({ node1, node2, shouldConnect }) => {
+  //     if (shouldConnect) {
+  //       connectNodes(node1, node2);
+  //     }
+  //   });
 
   // Yield the final concept nodes before returning
   yield {
@@ -108,52 +108,52 @@ export default async function* getConceptsFromSummary(
   yield conceptNodes.map(createConceptNodeDataFromNode);
 }
 
-async function analyzeNodePair(node1: ConceptNode, node2: ConceptNode) {
-  // Get unstructured reasoning
-  const reasoningResponse = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "system",
-        content:
-          "Very concisely explain whether and why these two concepts might be related. Keep it to 2-3 sentences. Be on the more conservative side, meaning that if you're not sure, you should say they're not related.",
-      },
-      {
-        role: "user",
-        content: `Concept 1: ${node1.description}\nConcept 2: ${node2.description}`,
-      },
-    ],
-  });
+// async function analyzeNodePair(node1: ConceptNode, node2: ConceptNode) {
+//   // Get unstructured reasoning
+//   const reasoningResponse = await openai.chat.completions.create({
+//     model: "gpt-4o-mini",
+//     messages: [
+//       {
+//         role: "system",
+//         content:
+//           "Very concisely explain whether and why these two concepts might be related. Keep it to 2-3 sentences. Be on the more conservative side, meaning that if you're not sure, you should say they're not related.",
+//       },
+//       {
+//         role: "user",
+//         content: `Concept 1: ${node1.description}\nConcept 2: ${node2.description}`,
+//       },
+//     ],
+//   });
 
-  const reasoning = reasoningResponse.choices[0].message.content;
+//   const reasoning = reasoningResponse.choices[0].message.content;
 
-  // Get structured decision
-  const decisionResponse = await openai.beta.chat.completions.parse({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "system",
-        content:
-          "Based on the previous reasoning, should these concepts be connected? Return true or false.",
-      },
-      {
-        role: "user",
-        content: reasoning || "",
-      },
-    ],
-    response_format: zodResponseFormat(
-      z.object({ shouldConnect: z.boolean() }),
-      "decision"
-    ),
-  });
+//   // Get structured decision
+//   const decisionResponse = await openai.beta.chat.completions.parse({
+//     model: "gpt-4o-mini",
+//     messages: [
+//       {
+//         role: "system",
+//         content:
+//           "Based on the previous reasoning, should these concepts be connected? Return true or false.",
+//       },
+//       {
+//         role: "user",
+//         content: reasoning || "",
+//       },
+//     ],
+//     response_format: zodResponseFormat(
+//       z.object({ shouldConnect: z.boolean() }),
+//       "decision"
+//     ),
+//   });
 
-  const shouldConnect =
-    decisionResponse.choices[0].message.parsed?.shouldConnect;
+//   const shouldConnect =
+//     decisionResponse.choices[0].message.parsed?.shouldConnect;
 
-  return {
-    node1,
-    node2,
-    reasoning,
-    shouldConnect,
-  };
-}
+//   return {
+//     node1,
+//     node2,
+//     reasoning,
+//     shouldConnect,
+//   };
+// }

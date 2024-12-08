@@ -26,7 +26,11 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import { Engine } from "@/lib/engine/schemas/engine";
-import { GenericNode } from "@/lib/engine/nodes/generic-node";
+import {
+  connectNodes,
+  disconnectNodes,
+  GenericNode,
+} from "@/lib/engine/nodes/generic-node";
 
 // Define the context type
 interface FlowContextType {
@@ -65,9 +69,16 @@ export function FlowProvider({ children }: { children: ReactNode }) {
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((eds) => addEdge(connection, eds));
+      setEdges((eds) => {
+        const sourceNode = engine.getNode(connection.source ?? "");
+        const targetNode = engine.getNode(connection.target ?? "");
+        if (sourceNode && targetNode) {
+          connectNodes(sourceNode, targetNode);
+        }
+        return addEdge(connection, eds);
+      });
     },
-    [setEdges]
+    [setEdges, engine]
   );
 
   const addNode = useCallback(
@@ -107,16 +118,50 @@ export function FlowProvider({ children }: { children: ReactNode }) {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      console.log("Applying node changes", changes);
-      setNodes((nds) => applyNodeChanges(changes, nds));
+      setNodes((nds) => {
+        for (const change of changes) {
+          if (change.type === "remove") {
+            const removedNode = engine.getNode(change.id);
+            if (removedNode) {
+              engine.removeNode(removedNode.id);
+            }
+            if (selectedNode?.id === change.id) {
+              setSelectedNode(null);
+            }
+          }
+        }
+        return applyNodeChanges(changes, nds);
+      });
     },
-    [setNodes]
+    [setNodes, engine, selectedNode]
   );
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
-      setEdges((eds) => applyEdgeChanges(changes, eds));
+      setEdges((eds) => {
+        for (const change of changes) {
+          if (change.type === "remove") {
+            const removedEdge = edges.find((edge) => edge.id === change.id);
+            if (removedEdge) {
+              console.log("Removing edge", removedEdge);
+              const sourceNode = engine.getNode(removedEdge?.source ?? "");
+              const targetNode = engine.getNode(removedEdge?.target ?? "");
+              if (sourceNode && targetNode) {
+                disconnectNodes(sourceNode, targetNode);
+              }
+            }
+          } else if (change.type === "add") {
+            const sourceNode = engine.getNode(change.item.source ?? "");
+            const targetNode = engine.getNode(change.item.target ?? "");
+            if (sourceNode && targetNode) {
+              connectNodes(sourceNode, targetNode);
+            }
+          }
+        }
+
+        return applyEdgeChanges(changes, eds);
+      });
     },
-    [setEdges]
+    [setEdges, engine, edges]
   );
 
   return (
