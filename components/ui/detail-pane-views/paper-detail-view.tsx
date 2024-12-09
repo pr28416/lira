@@ -23,13 +23,7 @@ import {
 import { connectNodes } from "@/lib/engine/nodes/generic-node";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import { PaperMetadata } from "@/lib/engine/types";
-import {
-  ExternalLinkIcon,
-  Link,
-  Loader2,
-  RefreshCcw,
-  Trash2,
-} from "lucide-react";
+import { ExternalLinkIcon, Loader2, RefreshCcw, Trash2 } from "lucide-react";
 import {
   getNewNodePositions,
   getRandomPosition,
@@ -52,7 +46,7 @@ export default function PaperDetailView({ node }: { node: Node }) {
 
   useEffect(() => {
     setAiSummary(paperNode.getAiSummary() ?? "");
-  }, [paperNode.aiSummary]);
+  }, [paperNode.aiSummary, paperNode]);
 
   useEffect(() => {
     console.log(
@@ -318,7 +312,7 @@ export default function PaperDetailView({ node }: { node: Node }) {
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    a: ({ node, ...props }) => (
+                    a: ({ ...props }) => (
                       <a {...props} target="_blank" rel="noopener noreferrer" />
                     ),
                   }}
