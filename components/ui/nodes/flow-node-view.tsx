@@ -228,7 +228,7 @@ export default function FlowNodeView(nodeProps: NodeProps<FlowNode>) {
           selectedNode?.id === nodeProps.id && "border border-primary",
           selectedNode !== null &&
             selectedNode.id !== nodeProps.id &&
-            "opacity-30"
+            "opacity-50"
         )}
       >
         <NodePicker nodeProps={nodeProps} />
