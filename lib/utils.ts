@@ -97,6 +97,32 @@ export function getRandomPosition(
   return { x, y };
 }
 
+export function getNewNodePositions(
+  centerX: number,
+  centerY: number,
+  numNodes: number,
+  radius: number = 200
+): { x: number; y: number }[] {
+  const positions: { x: number; y: number }[] = [];
+
+  // Use elliptic coordinates for a more natural spacing
+  const mu = 3; // Constant value determines the size of the ellipse
+  const a = radius / 2; // Semi-major axis
+
+  for (let i = 0; i < numNodes; i++) {
+    // Calculate angle for even distribution around the ellipse
+    const nu = (2 * Math.PI * i) / numNodes;
+
+    // Convert elliptic coordinates to Cartesian using the standard equations
+    const x = centerX + (a * Math.cosh(mu) * Math.cos(nu));
+    const y = centerY + (a * Math.sinh(mu) * Math.sin(nu));
+
+    positions.push({ x, y });
+  }
+
+  return positions;
+}
+
 export const summarizePaper = async (
   paperNode: PaperNode,
   node: Node,

@@ -150,6 +150,9 @@ export function ReactFlowCanvas({
       connectionMode={ConnectionMode.Loose}
       zoomOnDoubleClick={true}
       onClick={handleClick}
+      multiSelectionKeyCode={"Shift"}
+      maxZoom={2}
+      minZoom={0.1}
     >
       {/* <Controls /> */}
       {/* <MiniMap /> */}

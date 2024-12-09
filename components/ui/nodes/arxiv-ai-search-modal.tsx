@@ -16,7 +16,9 @@ import { QuestionNode } from "@/lib/engine/nodes/question-node";
 import { Minus, Plus, RefreshCcw } from "lucide-react";
 import { AiSearchArxivProgressResponse } from "@/lib/engine/services/arxiv/types";
 import { AiSearchArxivResponse } from "@/lib/engine/services/arxiv/types";
-import { cn } from "@/lib/utils";
+import { cn, getNewNodePositions, getRandomPosition } from "@/lib/utils";
+import { useFlow } from "@/contexts/node-context";
+import { PaperNode } from "@/lib/engine/nodes/paper-node";
 
 export default function ArxivAiSearchModal({
   question,
@@ -29,6 +31,7 @@ export default function ArxivAiSearchModal({
   const [isSearching, setIsSearching] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedResultUrls, setSelectedResultUrls] = useState<string[]>([]);
+  const { nodes, onNodesChange, addNode, addEdgeBetweenNodes } = useFlow();
 
   const handleSearch = async () => {
     try {
@@ -84,6 +87,29 @@ export default function ArxivAiSearchModal({
     } else {
       setSelectedResultUrls((prev) => [...prev, url]);
     }
+  };
+
+  const handleAddResults = () => {
+    const questionNode = nodes.find((node) => node.id === question.id);
+    if (!questionNode) return;
+
+    console.log("Question node", questionNode);
+
+    const newPositions = getNewNodePositions(
+      questionNode.position.x,
+      questionNode.position.y,
+      selectedResultUrls.length,
+      Math.min(questionNode.width ?? 200, questionNode.height ?? 100) / 2 // Semi-major axis
+    );
+    selectedResultUrls.forEach((url, index) => {
+      const paperMetadata = results.find((paper) => paper.URL === url);
+      console.log("Adding paper", paperMetadata);
+      if (paperMetadata) {
+        const paperNode = new PaperNode(paperMetadata);
+        addNode(paperNode, newPositions[index]);
+        addEdgeBetweenNodes(question, paperNode);
+      }
+    });
   };
 
   useEffect(() => {
@@ -160,6 +186,7 @@ export default function ArxivAiSearchModal({
           <Button
             variant="outline"
             disabled={selectedResultUrls.length === 0 || isSearching}
+            onClick={handleAddResults}
           >
             Add {selectedResultUrls.length} result
             {selectedResultUrls.length === 1 ? "" : "s"}

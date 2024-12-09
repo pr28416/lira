@@ -24,7 +24,7 @@ import { connectNodes } from "@/lib/engine/nodes/generic-node";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import { PaperMetadata } from "@/lib/engine/types";
 import { Loader2, RefreshCcw, Trash2 } from "lucide-react";
-import { getRandomPosition, loadCitedPapers } from "@/lib/utils";
+import { getNewNodePositions, getRandomPosition, loadCitedPapers } from "@/lib/utils";
 
 // Component to display detailed information about a research paper node
 export default function PaperDetailView({ node }: { node: Node }) {
@@ -155,27 +155,15 @@ export default function PaperDetailView({ node }: { node: Node }) {
                 duration: 5 * 1000,
               });
 
-              const numNodes = rawNodes.length;
-              const a = Math.min(node.width ?? 200, node.height ?? 100) / 2; // Semi-major axis
-              const centerX = node.position.x;
-              const centerY = node.position.y;
+              const newPositions = getNewNodePositions(
+                node.position.x,
+                node.position.y,
+                rawNodes.length,
+                Math.min(node.width ?? 200, node.height ?? 100) // Semi-major axis
+              );
 
               rawNodes.forEach((conceptNode, index) => {
-                // Use μ (mu) and ν (nu) as our elliptic coordinates
-                // We'll keep μ constant to place nodes on the same ellipse
-                const mu = 3; // Constant value determines the size of the ellipse
-                const nu = (2 * Math.PI * index) / numNodes; // Varies around the ellipse
-
-                // Convert elliptic coordinates to Cartesian using the standard equations:
-                // x = a * cosh(μ) * cos(ν)
-                // y = a * sinh(μ) * sin(ν)
-                const x = a * Math.cosh(mu) * Math.cos(nu);
-                const y = a * Math.sinh(mu) * Math.sin(nu);
-
-                addNode(conceptNode, {
-                  x: centerX + x + (node.width ?? 0) / 2,
-                  y: centerY + y + (node.height ?? 0) / 2,
-                });
+                addNode(conceptNode, newPositions[index]);
               });
 
               rawNodes.forEach((conceptNode) => {
