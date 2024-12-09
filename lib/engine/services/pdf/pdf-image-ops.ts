@@ -1,7 +1,9 @@
+// TODO: This is hanging for some reason
+
 import * as pdfjsLib from "pdfjs-dist";
 import { OPS } from "pdfjs-dist";
 
-async function extractImagesFromPdfUrl(
+export async function extractImagesFromPdfUrl(
   pdfUrl: string
 ): Promise<Uint8ClampedArray[][]> {
   // Initialize PDF.js
@@ -21,12 +23,12 @@ async function extractImagesFromPdfUrl(
       for (let i = 0; i < operatorList.fnArray.length; i++) {
         if (operatorList.fnArray[i] === OPS.paintImageXObject) {
           const imgArgs = operatorList.argsArray[i];
-          // Wait for the image object to be ready
-          const imgObj = await pdfPage.objs.get(imgArgs[0]);
 
-          if (imgObj?.data instanceof Uint8ClampedArray) {
-            images.push(imgObj.data);
-          }
+          pdfPage.objs.get(imgArgs[0], (imgObj) => {
+            if (imgObj?.data instanceof Uint8ClampedArray) {
+              images.push(imgObj.data);
+            }
+          });
         }
       }
 
@@ -34,10 +36,11 @@ async function extractImagesFromPdfUrl(
     }
   } finally {
     // Cleanup
+    console.log("Destroying loading task");
     await loadingTask.destroy();
   }
 
+  console.log("Finished extracting images");
+
   return imagesByPage;
 }
-
-export { extractImagesFromPdfUrl };
