@@ -299,7 +299,7 @@ export default function PaperDetailView({ node }: { node: Node }) {
                 </div>
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
-                  className="text-foreground w-full prose-sm"
+                  className="text-foreground w-full prose-sm prose-a:text-blue-500"
                 >
                   {aiSummary}
                 </ReactMarkdown>
