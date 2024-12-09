@@ -23,8 +23,18 @@ import {
 import { connectNodes } from "@/lib/engine/nodes/generic-node";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import { PaperMetadata } from "@/lib/engine/types";
-import { Loader2, RefreshCcw, Trash2 } from "lucide-react";
-import { getNewNodePositions, getRandomPosition, loadCitedPapers } from "@/lib/utils";
+import {
+  ExternalLinkIcon,
+  Link,
+  Loader2,
+  RefreshCcw,
+  Trash2,
+} from "lucide-react";
+import {
+  getNewNodePositions,
+  getRandomPosition,
+  loadCitedPapers,
+} from "@/lib/utils";
 
 // Component to display detailed information about a research paper node
 export default function PaperDetailView({ node }: { node: Node }) {
@@ -219,13 +229,21 @@ export default function PaperDetailView({ node }: { node: Node }) {
       {/* Title and authors section */}
       <div className="flex flex-col gap-1 font-bold">
         {/* Paper title */}
-        <a
-          href={paperNode.rawPaperMetadata?.URL}
-          className="text-lg font-bold"
-          target="_blank"
-        >
-          {paperNode.rawPaperMetadata?.title}
-        </a>
+        <div className="flex flex-row gap-1">
+          <p className="text-lg font-bold">
+            {paperNode.rawPaperMetadata?.title}
+          </p>
+          <Button variant="outline" size="icon" asChild>
+            <a
+              aria-label="Open paper in new tab"
+              href={paperNode.rawPaperMetadata?.URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLinkIcon className="w-4 h-4" />
+            </a>
+          </Button>
+        </div>
         {/* Authors list with muted appearance */}
         <p className="text-xs text-muted-foreground">
           {paperNode.rawPaperMetadata?.authors
