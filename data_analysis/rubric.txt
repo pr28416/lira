@@ -1,0 +1,57 @@
+## Initial Research Understanding (40 points)
+
+### Basic Literature Coverage (20 points)
+- **20 points**: Identifies 2-3 key papers/approaches and their main findings
+- **15 points**: Mentions 1-2 relevant papers/approaches
+- **10 points**: General awareness of existing work without specific examples
+- **5 points**: Very limited awareness of existing work
+
+### Problem Scope (20 points)
+- **20 points**: Clear understanding of core challenges and key considerations
+- **15 points**: Good grasp of main challenges
+- **10 points**: Basic understanding of the problem
+- **5 points**: Unclear problem understanding
+
+## Quick Analysis (40 points)
+
+### Technical Insight (20 points)
+For Cultural Relevance Question:
+- **20 points**: Identifies key aspects (e.g., region detection, cultural embeddings, bias)
+- **15 points**: Understands some technical aspects
+- **10 points**: Basic technical awareness
+- **5 points**: Minimal technical understanding
+
+For Adaptive UI Question:
+- **20 points**: Identifies key aspects (e.g., user modeling, personalization, interaction patterns)
+- **15 points**: Understands some technical aspects
+- **10 points**: Basic technical awareness
+- **5 points**: Minimal technical understanding
+
+### Critical Thinking (20 points)
+- **20 points**: Identifies gaps and potential research directions
+- **15 points**: Some analysis of limitations or opportunities
+- **10 points**: Basic critical thinking
+- **5 points**: Minimal analysis
+
+## Research Direction (20 points)
+- **20 points**: Clear suggestion for next steps or research focus
+- **15 points**: General idea of potential direction
+- **10 points**: Vague suggestions
+- **5 points**: No clear direction
+
+## Key Elements to Look For
+
+### Cultural Relevance Question
+- Basic understanding of regional computing challenges
+- Awareness of bias in language models
+- Consideration of privacy/ethical implications
+
+### Adaptive UI Question
+- Understanding of personalization basics
+- Awareness of user interaction patterns
+- Basic knowledge of LLM capabilities
+
+## Red Flags
+- No consideration of practical limitations
+- Overconfident claims without support
+- No identification of challenges
